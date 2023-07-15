@@ -1,0 +1,2 @@
+vpc_name: "AcrVPC"
+cidr_mask: 24
