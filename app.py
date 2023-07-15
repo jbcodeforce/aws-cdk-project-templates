@@ -7,6 +7,7 @@ import aws_cdk as cdk
 from helpers.helpers import getAppEnv
 
 from VPCstack.vpc_stack import VPCstack
+from ECSstack.ecs_stack import ECSstack
 import yaml
 
 def load_configuration(appName: str) -> dict:
@@ -21,6 +22,7 @@ def init_app() -> cdk.App:
     config = load_configuration(app_env)
     ## Add nested stacks below
     vpc_stack = VPCstack(app, f"{app_env}-vpc",env=env,config=config)
+    ecs_cluster_stack = ECSstack(app, f"{app_env}-ecs",vpc=vpc_stack.vpc,env=env, config=config)
     return app
 
 
