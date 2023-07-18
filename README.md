@@ -14,7 +14,9 @@
 
 * Create the ECS Cluster within the VPC
 
-**JavaAppstack**: an example of a Quarkus hello world to deploy from ECR
+**ECStasks**: a Task definition for a Quarkus hello world to deploy from ECR. 
+
+**RDSStack**: to declare a RDS postgresql inside the VPC private subnet.
 
 ## CDK Setup
 
