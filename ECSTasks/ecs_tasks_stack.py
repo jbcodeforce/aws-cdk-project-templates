@@ -5,17 +5,21 @@ from aws_cdk import (
     aws_ecr as ecr,
     aws_iam as iam,
     aws_logs,
-    aws_elasticloadbalancingv2 as elbv2
+    aws_elasticloadbalancingv2 as elbv2,
+    aws_ecs_patterns as ecs_patterns,
 )
 
 from constructs import Construct
 from helpers.BaseStack import BaseStack
 
-# Define a task and service  for a given app/microservice
+# Define a task and service  for a given app/microservice exposed on port 8080
 class ECSJavaTask(BaseStack):
     def __init__(self,scope: Construct, construct_id: str, cluster: ecs.Cluster, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        # Get security group from the VPC
+        sg=cluster.vpc
+                
         role: iam.Role = iam.Role(
             self,
             "task-def-role",
