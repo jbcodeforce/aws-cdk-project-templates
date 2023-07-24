@@ -47,8 +47,11 @@ $ pip install -r requirements.txt
 
 At this point you can now synthesize the CloudFormation template for this code.
 
-```
-$ cdk synth
+```sh
+# Be sure to use the good configuration (e.g folder config/acr.yaml)
+export APP_NAME=acr
+# select one of the available stacks: cdk dep
+cdk synth acr-vpc 
 ```
 
 To add additional dependencies, for example other CDK libraries, just add
@@ -66,15 +69,34 @@ command.
 
 ## Java Quarkus app sample
 
-The scripts under `app-samples/quarkus-app` should help to get quarkus CLI, get AWS account id and region, generate basic code, build the app, the docker image and push to ECR repo. Here are the steps:
+The scripts under `app-samples/quarkus-app` should help to get quarkus CLI, get AWS account id and region, generate basic code, build the app, the docker image and push to ECR repo. 
+
+On EC2 machine, we need Java JDK 17, Maven 3.6
+
+```sh
+sudo yum update
+sudo yum install git
+wget --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+sudo rpm -Uvh jdk-17_linux-x64_bin.rpm
+sudo wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sudo sed -i s/\$releasever/7/g /etc/yum.repos.d/epel-apache-maven.repo
+sudo yum install -y apache-maven
+sudo yum install docker
+sudo usermod -a -G docker ec2-user
+newgrp docker
+sudo systemctl start docker.service
+```
+
+Here are the steps:
 
 ```sh
 cd app-samples/quarkus-app
-# Get quarkus cli, maven quarkus repository reference, export AWS ACCOUNT_ID and REGION
-./setup.sh
-./createApp.sh
-./build.sh
-./aws_push.sh
+# Build with mvnw
+./mvnw package
+# Build the image
+docker build -f ../Dockerfile -t 403993201276.dkr.ecr.us-west-2.amazonaws.com/demo-customer-api:latest .
+
+
 ```
 
 

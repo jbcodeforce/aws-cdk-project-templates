@@ -66,14 +66,16 @@ class VPCstack(BaseStack):
         )
         policy = iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")
         role.add_managed_policy(policy)
+        role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("EC2InstanceProfileForImageBuilderECRContainerBuilds"))
  
+        myAmiImage = ec2.LookupMachineImage(name="MyAcrBastion")
         bastion = ec2.Instance(
             self,
             "BastionHost",
             instance_name=self.config.get("bastion_name"),
             key_name=self.config.get("key_name"),
             instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
-            machine_image=amzn_linux,
+            machine_image=myAmiImage,
             security_group=sg,
             role=role,
             vpc=self.vpc,
