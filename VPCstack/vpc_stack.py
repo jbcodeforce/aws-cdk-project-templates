@@ -14,13 +14,13 @@ class VPCstack(BaseStack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
-        if self.config.get("vpc_name") is None:
+        self.vpc= self.lookup_vpc(self.config.get("vpc_name"))
+        if self.vpc is None:
             self.vpc = self.create_vpc(construct_id)
-        else:
-            self.vpc = self.lookup_vpc(self.config.get("vpc_name"))
-        self.bastionSecurityGroup = self.createBastionSecurityGroup()
         
+        self.bastionSecurityGroup = self.createBastionSecurityGroup()
+        CfnOutput(self,"VPC", value=self.vpc.vpc_id, export_name="vpc")
+
         
     def create_vpc(self, vpc_name: str) -> ec2.Vpc:
 

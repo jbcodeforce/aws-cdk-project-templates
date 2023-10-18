@@ -3,7 +3,7 @@ from aws_cdk import  Stack, aws_ec2 as ec2
 
 from constructs import Construct
 from .helpers import getAppEnv
-
+import boto3
 
 class BaseStack(Stack):
 
@@ -14,9 +14,18 @@ class BaseStack(Stack):
         super().__init__(scope, id, **kwargs)                  
 
     def lookup_vpc(self, vpc_name: str) -> ec2.Vpc:
-        vpc = None
-        try:
-            vpc=ec2.Vpc.from_lookup(self, vpc_name, is_default=False)
-        except:
-            pass
+        client = boto3.client('ec2')
+        response = client.describe_vpcs(
+                        Filters=[{
+                            'Name': 'tag:Name',
+                            'Values': [
+                                vpc_name
+                            ]
+                        }]
+                    )
+        if len(response['Vpcs']) > 0:
+            vpc=response['Vpcs'][0]
+        else:
+            vpc= None
         return vpc
+    

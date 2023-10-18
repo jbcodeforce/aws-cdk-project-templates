@@ -19,3 +19,4 @@ class ECSstack(BaseStack):
             vpc=self.vpc, 
             cluster_name=self.config.get("ecs_cluster_name")
         )
+        

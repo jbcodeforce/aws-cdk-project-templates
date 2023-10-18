@@ -4,15 +4,15 @@
 
 **VPCStack:**
 
-* VPC on 2 AZs with 2 public and 2 private subnets, one internet gateway, a default security group
-* In each public subnet: one Elastic IP, a route table ,  a NAT gateway, a default route for outbound traffic
+* VPC with 2 AZs with 2 public and 2 private subnets, one internet gateway, a default security group
+* In each public subnet: one Elastic IP (for the NATGW), a route table ,  a NAT gateway, a default route for outbound traffic
 * In each private subnet: one route table, with route for outbound traffic to NAT gateway, 
 * A lambda function to remove all inbound/outbound rules from the VPC default security group
-* A EC2 Bastion host for SSH to private hosts, and get connection from your working laptop.
+* A EC2 Bastion host for SSH to private hosts, and get connection from our laptop to the Bastion.
 
 **ECSstack**:
 
-* Create the ECS Cluster within the VPC
+* Create the ECS Cluster within the VPC private subnet
 
 **ECStasks**: a Task definition for a Quarkus hello world to deploy from ECR. 
 
@@ -45,18 +45,15 @@ Once the virtualenv is activated, you can install the required dependencies.
 $ pip install -r requirements.txt
 ```
 
-At this point you can now synthesize the CloudFormation template for this code.
+At this point you can now synthesize the CloudFormation templates for this code.
 
 ```sh
 # Be sure to use the good configuration (e.g folder config/acr.yaml)
 export APP_NAME=acr
-# select one of the available stacks: cdk dep
+# select one of the available stacks:
 cdk synth acr-vpc 
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
 
 ### Useful CDK commands
 
@@ -69,9 +66,9 @@ command.
 
 ## Java Quarkus app sample
 
-The scripts under `app-samples/quarkus-app` should help to get quarkus CLI, get AWS account id and region, generate basic code, build the app, the docker image and push to ECR repo. 
+The scripts under `app-samples/quarkus-app` should help to get quarkus CLI, get AWS account id and region, generate basic code, build the app, the docker image and push to ECR repo.
 
-On EC2 machine, we need Java JDK 17, Maven 3.6
+On EC2 machine, we need Java JDK 17, and Maven 3.6, so the EC2 user data looks like:
 
 ```sh
 sudo yum update
@@ -94,10 +91,11 @@ cd app-samples/quarkus-app
 # Build with mvnw
 ./mvnw package
 # Build the image
-docker build -f ../Dockerfile -t 403993201276.dkr.ecr.us-west-2.amazonaws.com/demo-customer-api:latest .
-
-
+docker build -f ../Dockerfile -t <account>.dkr.ecr.us-west-2.amazonaws.com/demo-customer-api:latest .
 ```
+
+## Python Flask App
+
 
 
 
