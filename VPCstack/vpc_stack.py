@@ -17,8 +17,6 @@ class VPCstack(BaseStack):
         self.vpc= self.lookup_vpc(self.config.get("vpc_name"))
         if self.vpc is None:
             self.vpc = self.create_vpc(construct_id)
-        
-        self.bastionSecurityGroup = self.createBastionSecurityGroup()
         CfnOutput(self,"VPC", value=self.vpc.vpc_id, export_name="vpc")
 
         
@@ -28,7 +26,7 @@ class VPCstack(BaseStack):
             cidr=self.config.get("vpc_cidr"),
             max_azs=2,
             vpc_name=vpc_name,
-            nat_gateways=1,
+            nat_gateways=2,
             ip_addresses=ec2.IpAddresses.cidr(CIDR),
             subnet_configuration=[
                 ec2.SubnetConfiguration(
@@ -46,45 +44,4 @@ class VPCstack(BaseStack):
 
         return vpc
     
-    def createBastionSecurityGroup(self):
-        r=requests.get("https://checkip.amazonaws.com")
-        my_ip = r.text.strip()
-
-        amzn_linux = ec2.MachineImage.latest_amazon_linux2(
-            edition= ec2.AmazonLinuxEdition.STANDARD,
-            virtualization= ec2.AmazonLinuxVirt.HVM,
-            storage= ec2.AmazonLinuxStorage.GENERAL_PURPOSE
-        )
-
-        sg = ec2.SecurityGroup(self, "bastion-sg", vpc=self.vpc, allow_all_outbound=True,)
-
-        role = iam.Role(
-            self,
-            "BastionRole",
-            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
-            description="Role for Bastion host",
-        )
-        policy = iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")
-        role.add_managed_policy(policy)
-        role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("EC2InstanceProfileForImageBuilderECRContainerBuilds"))
- 
-        myAmiImage = ec2.LookupMachineImage(name="MyAcrBastion")
-        bastion = ec2.Instance(
-            self,
-            "BastionHost",
-            instance_name=self.config.get("bastion_name"),
-            key_name=self.config.get("key_name"),
-            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
-            machine_image=myAmiImage,
-            security_group=sg,
-            role=role,
-            vpc=self.vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-        )
-
-        bastion.connections.allow_from(ec2.Peer.ipv4(f"{my_ip}/32"), ec2.Port.all_traffic())
-
-        CfnOutput(self, "bastion-public-dns-name", value=bastion.instance_public_dns_name)
-        CfnOutput(self, "bastion-private-ip", value=bastion.instance_private_ip)
-
-        return sg
+       
