@@ -28,6 +28,8 @@ class VPCstack(BaseStack):
             vpc_name=vpc_name,
             nat_gateways=2,
             ip_addresses=ec2.IpAddresses.cidr(CIDR),
+            enable_dns_hostnames=True,
+            enable_dns_support=True,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
                     name="public",
